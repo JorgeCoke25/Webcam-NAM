@@ -15,9 +15,23 @@
     <div class="status"></div>
 
     <script>
-        var canvas = document.querySelector('#preview');
-        var context = canvas.getContext('2d');
-        var btn = document.querySelector('#btn');
+        const canvas = document.querySelector('#preview');
+        const context = canvas.getContext('2d');
+        const btn = document.querySelector('#btn');
+        //Segundo Codigo
+        const stream = await navigator.mediaDevices.getUserMedia({});
+        const track = stream.getTracks()[0];
+
+        const media_processor = new MediaStreamTrackProcessor(track);
+
+        const reader = media_processor.readable.getReader();
+
+        while (true){
+            const result = await reader.read();
+            if (result.done)
+                break;
+            let frame_from_camera = result.value;
+        }
 
         canvas.width= 512;
         canvas.height = 384;
@@ -25,9 +39,9 @@
         context.width = canvas.width;
         context.height = canvas.height;
 
-        var video = document.querySelector('#video');
+        const video = document.querySelector('#video');
 
-        var socket = io();
+        const socket = io();
 
         function publicarMensaje(msg){
             document.querySelector('.status').innerText = msg;
@@ -41,7 +55,8 @@
         }
         function verVideo(video,context){
             context.drawImage(video,0,0,context.width,context.height);
-            socket.emit('stream', canvas.toDataURL('image/webp'));
+            const dataURL = canvas.toDataURL('image/webp');
+            socket.emit('stream', dataURL);
         }
 
         btn.addEventListener('click',()=>{
@@ -49,9 +64,9 @@
             if(navigator.getUserMedia){
                 navigator.getUserMedia({video:true}, loadCamera, errorCamera);
             }
-            var interval = setInterval(()=>{
-                verVideo(video,context);
-            },300)
+            const interval = setInterval(() => {
+                verVideo(video, context);
+            }, 33);
         })
     </script>
 </body>

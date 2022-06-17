@@ -19,8 +19,7 @@ app.use(express.static(__dirname+"/public"))
 io.on('connection', (socket)=>{
     socket.on('stream', (image)=>{
         //emitir el evento a todos los sockets, aqui tambien se hace la logica de respecto al proceso de imagenes.
-        console.log(contador+=1)
-        socket.broadcast.emit('stream',image);
+        socket.emit('stream',image);
     })
 })
 
