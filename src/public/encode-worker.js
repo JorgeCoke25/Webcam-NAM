@@ -41,7 +41,7 @@ async function startRecording(fileHandle, frameStream, trackSettings) {
 
     frameReader.read().then(async function processFrame({done, value}) {
         let frame = value;
-
+        
         if(done) {
             await encoder.flush();
             encoder.close();
