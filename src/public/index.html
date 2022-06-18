@@ -7,52 +7,89 @@
 </head>
 <body>
     <h1>Transmision en directo</h1>
-    <button id="btn">
-        Emitir
+    <button id="btn" onclick="onButtonClicked()">
+        Grabar
     </button>
     <video src="" id="video" style="width: 800px; height: 600px" autoplay="true"></video>
     <canvas id="preview"></canvas>
     <div class="status"></div>
 
     <script>
-        var canvas = document.querySelector('#preview');
-        var context = canvas.getContext('2d');
-        var btn = document.querySelector('#btn');
+        const canvas = document.querySelector('#preview');
+        const btn = document.querySelector('#btn');
+        let encodeWorker = null;
+        let stream = null;
+        let videoTrack = null;
 
-        canvas.width= 512;
-        canvas.height = 384;
+        async function startRecording() {
+            console.assert(btn.innerText === 'Grabar');
+            btn.disabled = true;
 
-        context.width = canvas.width;
-        context.height = canvas.height;
+            let handle = await window.showSaveFilePicker({
+                startIn: 'videos',
+                suggestedName: 'myVideo.webm',
+                types: [{
+                    description: 'Video File',
+                    accept: {'video/webm': ['.webm']}
+                }],
+            });
 
-        var video = document.querySelector('#video');
+            videoTrack = stream.getTracks()[0];
+            let trackSettings = videoTrack.getSettings();
+            let trackProcessor = new MediaStreamTrackProcessor(videoTrack);
+            let frameStream = trackProcessor.readable;
 
-        var socket = io();
 
-        function publicarMensaje(msg){
-            document.querySelector('.status').innerText = msg;
+            encodeWorker = new Worker('./encode-worker.js');
+            encodeWorker.postMessage({
+                type: 'start',
+                fileHandle: handle,
+                frameStream: frameStream,
+                trackSettings: trackSettings
+            }, [frameStream]);
+
+            btn.innerText = 'Parar de grabar';
+            btn.disabled = false;
         }
-        function loadCamera(stream){
-            video.srcObject = stream;
-            publicarMensaje('Camara funcionando');
-        }
-        function errorCamera(){
-            publicarMensaje('Camara ha fallado');
-        }
-        function verVideo(video,context){
-            context.drawImage(video,0,0,context.width,context.height);
-            socket.emit('stream', canvas.toDataURL('image/webp'));
+
+        function stopRecording() {
+            console.assert(btn.innerText === 'Parar de grabar');
+            btn.innerText = 'Grabar';
+            encodeWorker.postMessage({ type: 'stop'});
+
         }
 
-        btn.addEventListener('click',()=>{
-            navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia|| navigator.mozGetUserMedia || navigator.msgGetUserMedia);
-            if(navigator.getUserMedia){
-                navigator.getUserMedia({video:true}, loadCamera, errorCamera);
+        async function onButtonClicked() {
+            switch(btn.innerText) {
+                case 'Grabar':
+                    await startRecording();
+                    break;
+                case 'Parar de grabar':
+                    stopRecording();
+                    break;
             }
-            var interval = setInterval(()=>{
-                verVideo(video,context);
-            },300)
-        })
+        }
+
+        async function main() {
+            let constraints = {
+                audio: false,
+                video: {width: 1920, height: 1080, frameRate: 30}
+            };
+            stream = await window.navigator.mediaDevices.getUserMedia(constraints);
+            let video = document.getElementById('video');
+            video.srcObject = stream;
+        }
+
+        document.body.onload = main;
+
+        const video = document.querySelector('#video');
+
+        const socket = io();
+
+        function verVideo(){
+            const dataURL = canvas.toDataURL('image/webp');
+            socket.emit('stream', dataURL);
+        }
     </script>
 </body>
 </htmln>
