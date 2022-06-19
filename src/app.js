@@ -1,8 +1,5 @@
 const express = require('express');
-const {Socket} = require("socket.io");
 const app = express();
-
-let contador = 0;
 
 //creamos un servidor http a partir de la libreria de express
 const http = require('http').Server(app);
@@ -18,7 +15,7 @@ app.use(express.static(__dirname+"/public"))
 
 io.on('connection', (socket)=>{
     socket.on('stream', (image)=>{
-        console.log(image)
+        console.log(image);
         //emitir el evento a todos los sockets, aqui tambien se hace la logica de respecto al proceso de imagenes.
         socket.emit('stream',image);
     })

@@ -1,4 +1,4 @@
-importScripts('./webm-writer2.js')
+importScripts('./webm-writer2.js');
 
 let webmWriter = null;
 let fileWritableStream = null;
@@ -11,7 +11,7 @@ async function startRecording(fileHandle, frameStream, trackSettings) {
 
     webmWriter = new WebMWriter({
         fileWriter: fileWritableStream,
-        codec: 'VP9',
+        codec: 'AV1',
         width: trackSettings.width,
         height: trackSettings.height});
 
@@ -28,7 +28,7 @@ async function startRecording(fileHandle, frameStream, trackSettings) {
     };
 
     const config = {
-        codec: "vp09.00.10.08",
+        codec: "av01.0.01M.08",
         width: trackSettings.width,
         height: trackSettings.height,
         bitrate: 10e6,
@@ -41,7 +41,6 @@ async function startRecording(fileHandle, frameStream, trackSettings) {
 
     frameReader.read().then(async function processFrame({done, value}) {
         let frame = value;
-        
         if(done) {
             await encoder.flush();
             encoder.close();
