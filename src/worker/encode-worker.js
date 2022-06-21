@@ -20,7 +20,6 @@ async function startRecording(fileHandle, frameStream, trackSettings) {
     const init = {
         output: (chunk) => {
             webmWriter.addFrame(chunk);
-            console.log(chunk);
         },
         error: (e) => {
             console.log(e.message);
@@ -58,6 +57,7 @@ async function startRecording(fileHandle, frameStream, trackSettings) {
         } else {
             console.log('dropping frame, encoder falling behind');
         }
+
         frame.close();
         frameReader.read().then(processFrame);
     });

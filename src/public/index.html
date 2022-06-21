@@ -79,15 +79,6 @@
         }
 
         document.body.onload = main;
-
-        const video = document.querySelector('#video');
-
-        const socket = io();
-
-        function verVideo(){
-            const dataURL = canvas.toDataURL('image/webp');
-            socket.emit('stream', dataURL);
-        }
     </script>
 </body>
 </htmln>
