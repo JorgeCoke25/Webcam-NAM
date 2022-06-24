@@ -6,7 +6,6 @@ let frameReader = null;
 
 async function startRecording(fileHandle, frameStream, trackSettings) {
     let frameCounter = 0;
-
     fileWritableStream = await fileHandle.createWritable();
 
     webmWriter = new WebMWriter({
@@ -21,6 +20,13 @@ async function startRecording(fileHandle, frameStream, trackSettings) {
         output: (chunk) => {
             webmWriter.addFrame(chunk);
             console.log(chunk);
+            fetch("http://localhost:8080/enviarChunk",{
+                headers:{
+                    "Content-Type": "application/json"
+                },
+                method: "POST",
+                body: chunk
+            });
         },
         error: (e) => {
             console.log(e.message);
